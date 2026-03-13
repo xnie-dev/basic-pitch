@@ -148,3 +148,10 @@ junit.xml
 
 # intellij
 .idea/
+
+# local files
+*.mp3
+*.wav
+output/
+*.sh
+.DS_Store
