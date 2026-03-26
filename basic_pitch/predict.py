@@ -135,6 +135,12 @@ def main() -> None:
         action="store_true",
         help="Skip the melodia trick.",
     )
+    parser.add_argument(
+        "--save-stats",
+        action="store_true",
+        help="Save note statistics as a JSON file.",
+    )
+
     args = parser.parse_args()
 
     print("")
@@ -172,6 +178,7 @@ def main() -> None:
             args.sonify_midi,
             args.save_model_outputs,
             args.save_note_events,
+            args.save_stats,
             model,
             args.onset_threshold,
             args.frame_threshold,

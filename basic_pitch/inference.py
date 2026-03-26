@@ -22,7 +22,7 @@ import logging
 import os
 import pathlib
 from typing import Any, Dict, Iterable, List, Optional, Sequence, Tuple, Union, cast
-
+from basic_pitch.note_stats import summarize_note_events
 
 from basic_pitch import CT_PRESENT, ICASSP_2022_MODEL_PATH, ONNX_PRESENT, TF_PRESENT, TFLITE_PRESENT
 
@@ -335,6 +335,7 @@ class OutputExtensions(enum.Enum):
     MODEL_OUTPUT_NPZ = "npz"
     MIDI_SONIFICATION = "wav"
     NOTE_EVENTS = "csv"
+    NOTE_STATS = "json"
 
 
 def verify_input_path(audio_path: Union[pathlib.Path, str]) -> None:
@@ -513,6 +514,7 @@ def predict_and_save(
     sonify_midi: bool,
     save_model_outputs: bool,
     save_notes: bool,
+    save_stats: bool,
     model_or_model_path: Union[Model, str, pathlib.Path],
     onset_threshold: float = DEFAULT_ONSET_THRESHOLD,
     frame_threshold: float = DEFAULT_FRAME_THRESHOLD,
@@ -534,6 +536,7 @@ def predict_and_save(
         sonify_midi: Whether or not to render audio from the MIDI and output it to a file.
         save_model_outputs: True to save contours, onsets and notes from the model prediction.
         save_notes: True to save note events.
+        save_stats: True to save note statistics as a JSON file.
         model_or_model_path: A loaded Model or path to a serialized model to load.
         onset_threshold: Minimum energy required for an onset to be considered present.
         frame_threshold: Minimum energy requirement for a frame to be considered present.
@@ -600,5 +603,20 @@ def predict_and_save(
                 except Exception as e:
                     failed_to_save(OutputExtensions.NOTE_EVENTS.name, note_events_path)
                     raise e
+                
+            if save_stats:
+                try:
+                    stats_path = build_output_path(audio_path, output_directory, OutputExtensions.NOTE_STATS)
+                except IOError as e:
+                    raise e
+                try:
+                    stats = summarize_note_events(note_events)
+                    with open(stats_path, "w") as f:
+                        json.dump(stats, f, indent=2)
+                    file_saved_confirmation(OutputExtensions.NOTE_STATS.name, stats_path)
+                except Exception as e:
+                    failed_to_save(OutputExtensions.NOTE_STATS.name, stats_path)
+                    raise e
+                
         except Exception as e:
             raise e
