@@ -23,6 +23,7 @@ import os
 import pathlib
 from typing import Any, Dict, Iterable, List, Optional, Sequence, Tuple, Union, cast
 from basic_pitch.note_stats import summarize_note_events
+from basic_pitch.piano_roll import save_piano_roll_image
 
 from basic_pitch import CT_PRESENT, ICASSP_2022_MODEL_PATH, ONNX_PRESENT, TF_PRESENT, TFLITE_PRESENT
 
@@ -336,6 +337,7 @@ class OutputExtensions(enum.Enum):
     MIDI_SONIFICATION = "wav"
     NOTE_EVENTS = "csv"
     NOTE_STATS = "json"
+    PIANO_ROLL = "png"
 
 
 def verify_input_path(audio_path: Union[pathlib.Path, str]) -> None:
@@ -515,6 +517,7 @@ def predict_and_save(
     save_model_outputs: bool,
     save_notes: bool,
     save_stats: bool,
+    save_piano_roll: bool,
     model_or_model_path: Union[Model, str, pathlib.Path],
     onset_threshold: float = DEFAULT_ONSET_THRESHOLD,
     frame_threshold: float = DEFAULT_FRAME_THRESHOLD,
@@ -537,6 +540,7 @@ def predict_and_save(
         save_model_outputs: True to save contours, onsets and notes from the model prediction.
         save_notes: True to save note events.
         save_stats: True to save note statistics as a JSON file.
+        save_piano_roll: True to save a piano roll visualization as a PNG file.
         model_or_model_path: A loaded Model or path to a serialized model to load.
         onset_threshold: Minimum energy required for an onset to be considered present.
         frame_threshold: Minimum energy requirement for a frame to be considered present.
@@ -616,6 +620,19 @@ def predict_and_save(
                     file_saved_confirmation(OutputExtensions.NOTE_STATS.name, stats_path)
                 except Exception as e:
                     failed_to_save(OutputExtensions.NOTE_STATS.name, stats_path)
+                    raise e
+                
+
+            if save_piano_roll:
+                try:
+                    piano_roll_path = build_output_path(audio_path, output_directory, OutputExtensions.PIANO_ROLL)
+                except IOError as e:
+                    raise e
+                try:
+                    save_piano_roll_image(note_events, str(piano_roll_path))
+                    file_saved_confirmation(OutputExtensions.PIANO_ROLL.name, piano_roll_path)
+                except Exception as e:
+                    failed_to_save(OutputExtensions.PIANO_ROLL.name, piano_roll_path)
                     raise e
                 
         except Exception as e:

@@ -3,10 +3,10 @@ import matplotlib.pyplot as plt
 
 NoteEvent = Tuple[float, float, int, float, Optional[List[int]]]
 
-def save_piano_roll(note_events: List[NoteEvent], output_path: str) -> None:
+def save_piano_roll_image(note_events: List[NoteEvent], output_path: str) -> None:
     """Save a simple piano roll visualization as a png file."""
     if not note_events:
-        raise ValueError("node_events is empty, cannot draw piano roll.")
+        raise ValueError("note_events is empty, cannot draw piano roll.")
     
     plt.figure(figsize=(12, 6))
 

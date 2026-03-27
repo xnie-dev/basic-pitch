@@ -140,6 +140,11 @@ def main() -> None:
         action="store_true",
         help="Save note statistics as a JSON file.",
     )
+    parser.add_argument(
+        "--save-piano-roll",
+        action="store_true",
+        help="Save a piano roll visualization as a PNG file.",
+    )
 
     args = parser.parse_args()
 
@@ -179,6 +184,7 @@ def main() -> None:
             args.save_model_outputs,
             args.save_note_events,
             args.save_stats,
+            args.save_piano_roll,
             model,
             args.onset_threshold,
             args.frame_threshold,
